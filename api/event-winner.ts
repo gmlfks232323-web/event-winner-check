@@ -52,13 +52,23 @@ export default async function handler(req: Request) {
   const resp = await fetch(url.toString()).catch(() => null);
   const data = await resp?.json().catch(() => ({} as any));
 
+  // 시트 응답이 이상해도 → 그냥 "이번주 당첨자 아님"으로 처리
   if (!data?.ok) {
     return res({
-      outputs: [t('당첨자 정보를 확인하는 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.')]
+      outputs: [{
+        basicCard: {
+          title: '아쉽지만 이번 주 당첨자에 포함되지 않았어요 😢',
+          description: '다음 이벤트에도 꼭 참여해 주세요!',
+          buttons: [
+            { action: 'block', label: '감사 인사 보기', blockId: THANKS_BLOCK_ID }
+          ]
+        }
+      }]
     });
   }
 
   const winner = !!data.winner;
+
 
   // 3) 당첨 / 미당첨 분기
   if (winner) {
